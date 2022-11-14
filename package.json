@@ -1,0 +1,31 @@
+{
+  "version": "0.0.1",
+  "name": "bitbucket-global-search",
+  "scripts": {
+    "dev": "cross-env TS_NODE_PROJECT=\"tsconfig-webpack-config.json\" webpack --watch --mode=development",
+    "build": "cross-env TS_NODE_PROJECT=\"tsconfig-webpack-config.json\" webpack --mode=production --node-env=production",
+    "build:dev": "cross-env TS_NODE_PROJECT=\"tsconfig-webpack-config.json\" webpack --mode=development",
+    "eslint": "eslint \"src/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.21",
+    "@types/tampermonkey": "^4.0.5",
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/parser": "^5.26.0",
+    "cross-env": "^7.0.3",
+    "esbuild-loader": "^2.18.0",
+    "eslint": "^7.21.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-chai-friendly": "^0.7.2",
+    "eslint-plugin-flowtype": "^5.3.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-prettier": "^3.3.1",
+    "eslint-plugin-unused-imports": "^1.1.1",
+    "prettier": "^2.5.1",
+    "ts-loader": "^9.2.7",
+    "ts-node": "^10.6.0",
+    "typescript": "^4.6.2",
+    "webpack": "^5.69.1",
+    "webpack-cli": "^4.9.2"
+  }
+}
