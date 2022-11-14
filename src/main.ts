@@ -1,82 +1,93 @@
-interface RepsResult {
-  size: number
-  limit: number
-  isLastPage: boolean
-  values: {
-    id: number
-    name: string
-    project: {
-      key: string
-      id: number
-      name: string
-      avatarUrl: string
-      links: { self: { href: string }[] }
-    }
-  }[]
+import { getLastReps, RepsResult } from './service'
+
+function appendEntryButton() {
+  const nav = document.querySelector('.aui-nav')
+  const a = document.createElement('a')
+  a.innerText = '全局搜索'
+  a.style.cursor = 'pointer'
+  const li = document.createElement('li')
+  li.appendChild(a)
+  nav?.appendChild(li)
+  return a
 }
 
-function getAllReps(): Promise<RepsResult> {
-  return new Promise<RepsResult>((resolve, reject) => {
-    GM_xmlhttpRequest({
-      method: 'GET',
-      url: 'https://code.fineres.com/rest/api/latest/profile/recent/repos?avatarSize=64&limit=2000',
-      headers: {
-        Accept: 'application/json, text/javascript, */*; q=0.01',
-        'Accept-Language': 'zh,zh-CN;q=0.9,en-US;q=0.8,en;q=0.7',
-        'Cache-Control': 'no-cache',
-        Connection: 'keep-alive',
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        cookie: document.cookie,
-      },
-      data: ``,
-      onload(response) {
-        const result = JSON.parse(response.responseText)
-        resolve(result)
-      },
-      onerror(response) {
-        console.error('请求失败:')
-        console.error(response)
-        reject(response)
-      },
-    })
+function init() {
+  appendDialog()
+}
+
+function appendDialog() {
+  const dialog = document.createElement('div')
+  dialog.innerHTML = `
+    <div class="aui-dialog2 aui-dialog2-large aui-dialog2-current aui-layer" id="aui-dialog2-1" role="dialog" aria-labelledby="aui-dialog2-1-heading" aria-hidden="true">
+      <div class="aui-dialog2-header">
+        <h2 class="aui-dialog2-header-main" id="aui-dialog2-1-heading">全局搜索</h2>
+        <a class="aui-dialog2-header-close">
+          <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>
+        </a>
+      </div>
+      <div class="aui-dialog2-content" style="height: 500px;">
+        <div class="aui-field-group">
+          <div class="aui-field">
+            <form class="aui" action="#">
+                <input placeholder="请输入关键字" id="search" class="text" type="search" name="search">
+                <input type="button" value="搜索" id="search-button" class="aui-button"></input>
+            </form>
+          </div>
+        </div>
+        <div class="search-result-repositories">
+          <ol id="search-result-repositories" class="dashboard-repositories-list"></ol>
+        </div>
+      </div>
+      <div class="aui-dialog2-footer">
+        <div class="aui-dialog2-footer-actions">
+          <button class="aui-button" id="close-btn">关闭</button>
+        </div>
+      </div>
+    </div>
+  `
+  document.body.appendChild(dialog)
+  AJS.$('#close-btn').click(() => {
+    AJS.dialog2('#aui-dialog2-1').hide()
   })
+  AJS.$('.aui-iconfont-close-dialog').click(() => {
+    AJS.dialog2('#aui-dialog2-1').hide()
+  })
+  return dialog
+}
+
+function renderSearchResult(items: RepsResult['values']) {
+  const repositories = document.querySelector('#search-result-repositories')
+  if (repositories) {
+    repositories
+    repositories.innerHTML = `${items
+      .map(
+        (item) =>
+          `<li><a href="/projects/${item.project.key}/repos/${item.name}/browse" aria-label="${item.project.name} / ${item.name}"><div class="project-avatar"><div style="display: inline-block; position: relative; outline: 0px;"><span class="css-50fm9s"><span class="css-1gv8fjs" role="img" aria-label="" style="background-image: url('${item.project.avatarUrl}')"></span></span></div></div><div class="repository-details"><div class="repository-name">${item.name}</div><div class="project-name">${item.project.name}</div></div></a></li>`
+      )
+      .join('')}`
+  }
 }
 
 async function main() {
-  const searchInput = document.getElementById('quick-search')
-  if (searchInput) {
-    searchInput.addEventListener('click', () => {
-      console.log('open search')
+  init()
+  appendEntryButton().addEventListener('click', async () => {
+    const search = document.getElementById('search') as any
+    search.value = ''
+    search.focus()
+    const { values } = await getLastReps()
+    AJS.dialog2('#aui-dialog2-1').show()
+    renderSearchResult(values)
+    AJS.$('#search-button').click(() => {
+      const searchText = search.value as string
+
+      const filtered = searchText
+        ? values.filter((v) => {
+            return v.name.toLowerCase().includes(searchText.toLowerCase())
+          })
+        : values
+      renderSearchResult(filtered)
     })
-  }
-  const { values } = await getAllReps()
-  const resultContent = document.getElementById('quick-search-results')!
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      const searchText = (e.target as any).value as string
-      const searchResult = values.filter((item) =>
-        item.name.toLocaleLowerCase().includes(searchText.toLocaleLowerCase())
-      )
-      console.log(
-        searchResult
-          .map(
-            (item) => `
-      <li class="search-results-item repository"><a href="/projects/CHART/repos/duchamp/browse" class="repository-link" data-entity="repository" data-repository-id="20854" data-repository-slug="duchamp" data-project-id="547" data-project-key="CHART" id="quick-search-repository-20854" title="Duchamp"><span class="aui-avatar aui-avatar-medium aui-avatar-project"><span class="aui-avatar-inner"><img alt="图表" src="/projects/CHART/avatar.png?s=64&amp;v=1492563502000" aria-describedby="aui-tooltip"></span></span><div class="item-wrapper"><strong class="item-name"><span><mark class="term-highlight">Duch</mark>amp</span></strong><p class="item-description">图表</p></div></a></li>
-      `
-          )
-          .join('')
-      )
-      resultContent.innerHTML = searchResult
-        .map(
-          (item) => `
-      <li class="search-results-item repository"><a href="/projects/CHART/repos/duchamp/browse" class="repository-link" data-entity="repository" data-repository-id="20854" data-repository-slug="duchamp" data-project-id="547" data-project-key="CHART" id="quick-search-repository-20854" title="Duchamp"><span class="aui-avatar aui-avatar-medium aui-avatar-project"><span class="aui-avatar-inner"><img alt="图表" src="/projects/CHART/avatar.png?s=64&amp;v=1492563502000" aria-describedby="aui-tooltip"></span></span><div class="item-wrapper"><strong class="item-name"><span><mark class="term-highlight">Duch</mark>amp</span></strong><p class="item-description">图表</p></div></a></li>
-      `
-        )
-        .join('')
-      console.log('%csearchResult: ', 'color: MidnightBlue; background: Aquamarine;', searchResult)
-    })
-  }
+  })
 }
 
 setTimeout(() => {
