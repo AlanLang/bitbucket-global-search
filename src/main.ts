@@ -1,4 +1,6 @@
-import { getLastReps, RepsResult } from './service'
+import { getAllPorjects, getLastReps, getReposByProject, RepsResult } from './service'
+
+let cacheResult: RepsResult['values'] = []
 
 function appendEntryButton() {
   const nav = document.querySelector('.aui-nav')
@@ -68,7 +70,45 @@ function renderSearchResult(items: RepsResult['values']) {
   }
 }
 
+function renderLoading() {
+  const repositories = document.querySelector('#search-result-repositories')
+  if (repositories) {
+    repositories.innerHTML = `<div class="loading"><div class="loading-spinner" style="height: 100px;width: 100%;display: flex;justify-content: center;align-items: center;"><aui-spinner></aui-spinner></div></div>`
+  }
+}
+
+function renderEmpty() {
+  const repositories = document.querySelector('#search-result-repositories')
+  if (repositories) {
+    repositories.innerHTML = `<div style="height: 100px;width: 100%;display: flex;justify-content: center;align-items: center;" class="empty">暂无数据</div>`
+  }
+}
+
+async function filterReps(keyWord: string, render: (items: RepsResult['values']) => void) {
+  let searchResult: RepsResult['values'] = cacheResult
+  if (searchResult.length === 0) {
+    const result = await getAllPorjects()
+    const projects = result.result
+    for (let index = 0; index < projects.length; index++) {
+      const project = projects[index]
+      console.log(`正在搜索${project.projectName}的仓库`)
+      const repo = await getReposByProject(project.projectKey)
+      searchResult = [...searchResult, ...repo.values]
+    }
+    cacheResult = searchResult
+  }
+  const result = searchResult.filter((v) => {
+    return v.name.toLowerCase().includes(keyWord.toLowerCase())
+  })
+  if (result.length > 0) {
+    render(result)
+  } else {
+    renderEmpty()
+  }
+}
+
 async function main() {
+  cacheResult = []
   init()
   appendEntryButton().addEventListener('click', async () => {
     const search = document.getElementById('search') as any
@@ -77,15 +117,13 @@ async function main() {
     const { values } = await getLastReps()
     AJS.dialog2('#aui-dialog2-1').show()
     renderSearchResult(values)
-    AJS.$('#search-button').click(() => {
+    AJS.$('#search-button').click(async () => {
       const searchText = search.value as string
-
-      const filtered = searchText
-        ? values.filter((v) => {
-            return v.name.toLowerCase().includes(searchText.toLowerCase())
-          })
-        : values
-      renderSearchResult(filtered)
+      renderLoading()
+      if (!searchText) {
+        renderSearchResult(values)
+      }
+      await filterReps(searchText, renderSearchResult)
     })
   })
 }
