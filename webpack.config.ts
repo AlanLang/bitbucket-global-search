@@ -24,6 +24,10 @@ const config: Configuration = {
   optimization: {
     minimizer: [
       new ESBuildMinifyPlugin({
+        minify: false,
+        minifyWhitespace: false,
+        minifyIdentifiers: false,
+        minifySyntax: false,
         target: 'es2015',
         banner: fs
           .readFileSync(path.resolve(__dirname, './src/user.ts'), 'utf-8')
