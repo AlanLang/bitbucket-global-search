@@ -64,7 +64,7 @@ function renderSearchResult(items: RepsResult['values']) {
     repositories.innerHTML = `${items
       .map(
         (item) =>
-          `<li><a href="/projects/${item.project.key}/repos/${item.name}/browse" aria-label="${item.project.name} / ${item.name}"><div class="project-avatar"><div style="display: inline-block; position: relative; outline: 0px;"><span class="css-50fm9s"><span class="css-1gv8fjs" role="img" aria-label="" style="background-image: url('${item.project.avatarUrl}')"></span></span></div></div><div class="repository-details"><div class="repository-name">${item.name}</div><div class="project-name">${item.project.name}</div></div></a></li>`
+          `<li><a href="/projects/${item.project.key}/repos/${item.name}/browse" aria-label="${item.project.name} / ${item.name}"><div class="project-avatar"><div style="display: inline-block; position: relative; outline: 0px;"><span class="css-50fm9s"><span class="css-1gv8fjs" role="img" aria-label="" style="background-image: url('${item.project.avatarUrl}');height: 40px;background-size: contain;"></span></span></div></div><div class="repository-details"><div class="repository-name">${item.name}</div><div class="project-name">${item.project.name}</div></div></a></li>`
       )
       .join('')}`
   }
