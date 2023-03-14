@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         bitbucket-global-search
-// @version      0.0.4
+// @version      0.0.5
 // @author       alan
 // @include      https://code.fineres.com/dashboard
 // @noframes
@@ -144,7 +144,7 @@
           <div class="aui-field">
             <form class="aui" action="#">
                 <input placeholder="\u8BF7\u8F93\u5165\u5173\u952E\u5B57" id="search" class="text" type="search" name="search">
-                <input type="button" value="\u641C\u7D22" id="search-button" class="aui-button"></input>
+                <input type="button" value="\u5168\u5C40\u641C\u7D22" id="search-button" class="aui-button"></input>
             </form>
           </div>
         </div>
@@ -153,6 +153,8 @@
         </div>
       </div>
       <div class="aui-dialog2-footer">
+        <div id="search-progress" style="display: inline-flex;align-items: center;height: 100%;">
+        </div>
         <div class="aui-dialog2-footer-actions">
           <button class="aui-button" id="close-btn">\u5173\u95ED</button>
         </div>
@@ -195,7 +197,7 @@
         const projects = result2.result;
         for (let index = 0; index < projects.length; index++) {
           const project = projects[index];
-          console.log(`\u6B63\u5728\u641C\u7D22${project.projectName}\u7684\u4ED3\u5E93`);
+          AJS.$("#search-progress").text(`\u6B63\u5728\u641C\u7D22${project.projectName}\u7684\u4ED3\u5E93`);
           const repo = yield getReposByProject(project.projectKey);
           searchResult = [...searchResult, ...repo.values];
         }
@@ -211,24 +213,43 @@
       }
     });
   }
+  function debounce(fn, wait) {
+    let timeout = null;
+    return function() {
+      if (timeout !== null)
+        clearTimeout(timeout);
+      timeout = window.setTimeout(fn, wait);
+    };
+  }
   function main() {
     return __async(this, null, function* () {
-      cacheResult = [];
+      cacheResult = JSON.parse(localStorage.getItem("bitbucket-search-result") || "[]");
       init();
       appendEntryButton().addEventListener("click", () => __async(this, null, function* () {
         const search = document.getElementById("search");
         search.value = "";
         search.focus();
-        const { values } = yield getLastReps();
+        const inputAction = debounce(() => {
+          const { value } = search;
+          if (value) {
+            filterReps(value, renderSearchResult);
+          } else {
+            renderEmpty();
+          }
+        }, 500);
+        search.addEventListener("input", inputAction);
         AJS.dialog2("#aui-dialog2-1").show();
-        renderSearchResult(values);
         AJS.$("#search-button").click(() => __async(this, null, function* () {
+          cacheResult = [];
+          const { values } = yield getLastReps();
           const searchText = search.value;
           renderLoading();
           if (!searchText) {
             renderSearchResult(values);
           }
           yield filterReps(searchText, renderSearchResult);
+          AJS.$("#search-progress").text("");
+          localStorage.setItem("bitbucket-search-result", JSON.stringify(cacheResult));
         }));
       }));
     });
