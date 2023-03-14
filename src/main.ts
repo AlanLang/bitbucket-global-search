@@ -32,7 +32,7 @@ function appendDialog() {
           <div class="aui-field">
             <form class="aui" action="#">
                 <input placeholder="请输入关键字" id="search" class="text" type="search" name="search">
-                <input type="button" value="搜索" id="search-button" class="aui-button"></input>
+                <input type="button" value="全局搜索" id="search-button" class="aui-button"></input>
             </form>
           </div>
         </div>
@@ -41,6 +41,8 @@ function appendDialog() {
         </div>
       </div>
       <div class="aui-dialog2-footer">
+        <div id="search-progress" style="display: inline-flex;align-items: center;height: 100%;">
+        </div>
         <div class="aui-dialog2-footer-actions">
           <button class="aui-button" id="close-btn">关闭</button>
         </div>
@@ -91,7 +93,7 @@ async function filterReps(keyWord: string, render: (items: RepsResult['values'])
     const projects = result.result
     for (let index = 0; index < projects.length; index++) {
       const project = projects[index]
-      console.log(`正在搜索${project.projectName}的仓库`)
+      AJS.$('#search-progress').text(`正在搜索${project.projectName}的仓库`)
       const repo = await getReposByProject(project.projectKey)
       searchResult = [...searchResult, ...repo.values]
     }
@@ -107,23 +109,42 @@ async function filterReps(keyWord: string, render: (items: RepsResult['values'])
   }
 }
 
+function debounce(fn: () => void, wait: number) {
+  let timeout: number | null = null
+  return function () {
+    if (timeout !== null) clearTimeout(timeout)
+    timeout = window.setTimeout(fn, wait)
+  }
+}
+
 async function main() {
-  cacheResult = []
+  cacheResult = JSON.parse(localStorage.getItem('bitbucket-search-result') || '[]')
   init()
   appendEntryButton().addEventListener('click', async () => {
     const search = document.getElementById('search') as any
     search.value = ''
     search.focus()
-    const { values } = await getLastReps()
+    const inputAction = debounce(() => {
+      const { value } = search as HTMLInputElement
+      if (value) {
+        filterReps(value, renderSearchResult)
+      } else {
+        renderEmpty()
+      }
+    }, 500)
+    search.addEventListener('input', inputAction)
     AJS.dialog2('#aui-dialog2-1').show()
-    renderSearchResult(values)
     AJS.$('#search-button').click(async () => {
+      cacheResult = []
+      const { values } = await getLastReps()
       const searchText = search.value as string
       renderLoading()
       if (!searchText) {
         renderSearchResult(values)
       }
       await filterReps(searchText, renderSearchResult)
+      AJS.$('#search-progress').text('')
+      localStorage.setItem('bitbucket-search-result', JSON.stringify(cacheResult))
     })
   })
 }

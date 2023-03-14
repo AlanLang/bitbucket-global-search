@@ -6,5 +6,6 @@ declare let AJS: {
   }
   $: (key: string) => {
     click: (e: any) => void
+    text: (text: string) => void
   }
 }
