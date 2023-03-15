@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         bitbucket-global-search
-// @version      0.0.5
+// @version      0.0.6
 // @author       alan
 // @include      https://code.fineres.com/dashboard
 // @noframes
@@ -230,6 +230,8 @@
         search.value = "";
         search.focus();
         const inputAction = debounce(() => {
+          if (cacheResult.length === 0)
+            return;
           const { value } = search;
           if (value) {
             filterReps(value, renderSearchResult);
