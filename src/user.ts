@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         bitbucket-global-search
-// @version      0.0.5
+// @version      0.0.6
 // @author       alan
 // @include      https://code.fineres.com/dashboard
 // @noframes

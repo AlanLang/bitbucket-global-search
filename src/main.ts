@@ -125,6 +125,7 @@ async function main() {
     search.value = ''
     search.focus()
     const inputAction = debounce(() => {
+      if (cacheResult.length === 0) return
       const { value } = search as HTMLInputElement
       if (value) {
         filterReps(value, renderSearchResult)
