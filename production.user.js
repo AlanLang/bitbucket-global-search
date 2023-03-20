@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         bitbucket-global-search
-// @version      0.0.6
+// @version      0.0.7
 // @author       alan
 // @include      https://code.fineres.com/dashboard
 // @noframes
@@ -142,7 +142,7 @@
       <div class="aui-dialog2-content" style="height: 500px;">
         <div class="aui-field-group">
           <div class="aui-field">
-            <form class="aui" action="#">
+            <form class="aui" onsubmit="return false">
                 <input placeholder="\u8BF7\u8F93\u5165\u5173\u952E\u5B57" id="search" class="text" type="search" name="search">
                 <input type="button" value="\u5168\u5C40\u641C\u7D22" id="search-button" class="aui-button"></input>
             </form>
@@ -226,6 +226,7 @@
       cacheResult = JSON.parse(localStorage.getItem("bitbucket-search-result") || "[]");
       init();
       appendEntryButton().addEventListener("click", () => __async(this, null, function* () {
+        var _a;
         const search = document.getElementById("search");
         search.value = "";
         search.focus();
@@ -241,6 +242,11 @@
         }, 500);
         search.addEventListener("input", inputAction);
         AJS.dialog2("#aui-dialog2-1").show();
+        (_a = document.getElementById("search")) == null ? void 0 : _a.addEventListener("keydown", (e) => {
+          if (e.keyCode === 13) {
+            AJS.$("#search-button").click();
+          }
+        });
         AJS.$("#search-button").click(() => __async(this, null, function* () {
           cacheResult = [];
           const { values } = yield getLastReps();
