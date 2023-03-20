@@ -1,5 +1,5 @@
 {
-  "version": "0.0.5",
+  "version": "0.0.7",
   "name": "bitbucket-global-search",
   "scripts": {
     "dev": "cross-env TS_NODE_PROJECT=\"tsconfig-webpack-config.json\" webpack --watch --mode=development",

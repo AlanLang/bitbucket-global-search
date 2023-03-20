@@ -30,7 +30,7 @@ function appendDialog() {
       <div class="aui-dialog2-content" style="height: 500px;">
         <div class="aui-field-group">
           <div class="aui-field">
-            <form class="aui" action="#">
+            <form class="aui" onsubmit="return false">
                 <input placeholder="请输入关键字" id="search" class="text" type="search" name="search">
                 <input type="button" value="全局搜索" id="search-button" class="aui-button"></input>
             </form>
@@ -135,6 +135,12 @@ async function main() {
     }, 500)
     search.addEventListener('input', inputAction)
     AJS.dialog2('#aui-dialog2-1').show()
+    document.getElementById('search')?.addEventListener('keydown', (e) => {
+      // 如果按下的是回车
+      if (e.keyCode === 13) {
+        AJS.$('#search-button').click()
+      }
+    })
     AJS.$('#search-button').click(async () => {
       cacheResult = []
       const { values } = await getLastReps()

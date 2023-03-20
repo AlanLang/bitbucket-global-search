@@ -5,7 +5,7 @@ declare let AJS: {
     remove: () => void
   }
   $: (key: string) => {
-    click: (e: any) => void
+    click: (e?: any) => void
     text: (text: string) => void
   }
 }
