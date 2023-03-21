@@ -118,6 +118,7 @@ function debounce(fn: () => void, wait: number) {
 }
 
 async function main() {
+  appendStyle()
   cacheResult = JSON.parse(localStorage.getItem('bitbucket-search-result') || '[]')
   init()
   appendEntryButton().addEventListener('click', async () => {
@@ -154,6 +155,37 @@ async function main() {
       localStorage.setItem('bitbucket-search-result', JSON.stringify(cacheResult))
     })
   })
+}
+
+function appendStyle() {
+  GM_addStyle(GM_getResourceText('css'))
+  GM_addStyle(`
+    .css-50fm9s {
+      height: 40px;
+      width: 40px;
+      -webkit-box-align: stretch;
+      align-items: stretch;
+      background-color: rgb(255, 255, 255);
+      border-radius: 3px;
+      box-sizing: content-box;
+      cursor: inherit;
+      display: flex;
+      flex-direction: column;
+      -webkit-box-pack: center;
+      justify-content: center;
+      outline: none;
+      overflow: hidden;
+      position: static;
+      transform: translateZ(0px);
+      transition: transform 200ms ease 0s, opacity 200ms ease 0s;
+      box-shadow: rgb(255, 255, 255) 0px 0px 0px 2px;
+      border: none;
+      margin: 2px;
+      padding: 0px;
+      font-size: inherit;
+      font-family: inherit;
+    }
+  `)
 }
 
 setTimeout(() => {
