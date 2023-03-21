@@ -1,13 +1,16 @@
 // ==UserScript==
 // @name         bitbucket-global-search
-// @version      0.0.7
+// @version      0.0.8
 // @author       alan
-// @include      https://code.fineres.com/dashboard
+// @include      https://code.fineres.com/*
 // @noframes
 // @description  bitbucket全局搜索
 // @namespace bitbucket-global-search
 // @license MIT
 // @grant        GM_xmlhttpRequest
+// @grant        GM_addStyle
+// @grant        GM_getResourceText
+// @resource css https://code.fineres.com/download/resources/com.atlassian.bitbucket.server.bitbucket-frontend:split_dashboard/dashboard.bundle.css
 // ==/UserScript==
 (() => {
   "use strict";
@@ -223,6 +226,7 @@
   }
   function main() {
     return __async(this, null, function* () {
+      appendStyle();
       cacheResult = JSON.parse(localStorage.getItem("bitbucket-search-result") || "[]");
       init();
       appendEntryButton().addEventListener("click", () => __async(this, null, function* () {
@@ -261,6 +265,36 @@
         }));
       }));
     });
+  }
+  function appendStyle() {
+    GM_addStyle(GM_getResourceText("css"));
+    GM_addStyle(`
+    .css-50fm9s {
+      height: 40px;
+      width: 40px;
+      -webkit-box-align: stretch;
+      align-items: stretch;
+      background-color: rgb(255, 255, 255);
+      border-radius: 3px;
+      box-sizing: content-box;
+      cursor: inherit;
+      display: flex;
+      flex-direction: column;
+      -webkit-box-pack: center;
+      justify-content: center;
+      outline: none;
+      overflow: hidden;
+      position: static;
+      transform: translateZ(0px);
+      transition: transform 200ms ease 0s, opacity 200ms ease 0s;
+      box-shadow: rgb(255, 255, 255) 0px 0px 0px 2px;
+      border: none;
+      margin: 2px;
+      padding: 0px;
+      font-size: inherit;
+      font-family: inherit;
+    }
+  `);
   }
   setTimeout(() => {
     main();
